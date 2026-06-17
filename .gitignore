@@ -1,0 +1,14 @@
+/node_modules
+/.next
+/out
+/build
+.DS_Store
+
+# Guest RSVP data (server-side store) — keep private, not in git
+/data
+
+.env.local
+.env*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
