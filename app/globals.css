@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  scroll-behavior: smooth;
+}
+
+body {
+  background:
+    radial-gradient(1200px 600px at 80% -10%, #fde7ea 0%, transparent 60%),
+    radial-gradient(900px 500px at 10% 10%, #fff1e8 0%, transparent 55%),
+    #fff7f1;
+  overflow-x: hidden;
+}
+
+/* Soft section dividers */
+.section {
+  position: relative;
+  width: 100%;
+  padding: clamp(3rem, 8vw, 7rem) 1.25rem;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(201, 164, 76, 0.35);
+  box-shadow: 0 20px 60px -25px rgba(125, 43, 58, 0.35);
+}
+
+.gold-text {
+  background: linear-gradient(90deg, #b8862f, #f1d588, #b8862f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Marquee for the guest list */
+@keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee-vertical var(--duration, 30s) linear infinite;
+}
+
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 12%,
+    black 88%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 12%,
+    black 88%,
+    transparent
+  );
+}
+
+.marquee-paused {
+  animation-play-state: paused;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #e8a0a8;
+  border-radius: 999px;
+}
