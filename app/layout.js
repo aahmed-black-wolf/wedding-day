@@ -15,9 +15,34 @@ const aref = Aref_Ruqaa({
   display: "swap",
 });
 
+const siteTitle = "نيمو & ديبو — حفل زفاف";
+const siteDescription = "دعوة زفاف نيمو وديبو — ١٨ يوليو ٢٠٢٦";
+
 export const metadata = {
-  title: "نيمو & ديبو — حفل زفاف",
-  description: "دعوة زفاف نيمو وديبو — ١٨ يوليو ٢٠٢٦",
+  metadataBase: new URL("https://nimo-and-dibo.example.com"),
+  title: siteTitle,
+  description: siteDescription,
+  openGraph: {
+    title: siteTitle,
+    description: siteDescription,
+    type: "website",
+    locale: "ar_AR",
+    siteName: siteTitle,
+    images: [
+      {
+        url: "/icon.svg",
+        width: 512,
+        height: 512,
+        alt: siteTitle,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
+    images: ["/icon.svg"],
+  },
 };
 
 export const viewport = {
