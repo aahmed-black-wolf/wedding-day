@@ -2,14 +2,16 @@
 
 Animated Arabic wedding website for **Nemmo & Depo** — **18 July 2026**.
 Built with **Next.js**, **Framer Motion**, and **React Three Fiber** (3D floating
-petals & hearts). Guests RSVP with their name and appear in a live, auto-scrolling
-guest list backed by **Supabase**.
+petals & hearts). Guests RSVP with their name and appear in an auto-scrolling
+guest list. Names are stored **server-side in a JSON file** via a Next.js API
+route — no database account and no public keys in the browser.
 
 ## Features
 - 🌸 3D hero scene (floating petals + hearts) via React Three Fiber
 - ⏳ Live countdown to 2026-07-18
-- 💌 RSVP form that saves the guest's name
-- 📜 Infinite auto-scrolling guest list (pauses on hover), updates in realtime
+- 💌 RSVP form that saves the guest's name (server-side)
+- 📜 Auto-scrolling guest list (pauses on hover), refreshed by polling
+- 🎵 Background music (Canon in D) starting on the intro tap
 - 🌐 Full Arabic / RTL layout with elegant Arabic fonts
 
 ## Quick start
@@ -21,31 +23,32 @@ npm run dev
 
 Open http://localhost:3000
 
-> Without Supabase keys the site runs in **local demo mode**: names save to the
-> visitor's own browser so you can try everything immediately.
+That's it — no setup, no keys. The first RSVP creates `data/guests.json` and
+every visitor reads the same list from the server.
 
-## Enable the shared guest list (Supabase — free)
-
-1. Create a free project at https://supabase.com.
-2. In the dashboard go to **SQL Editor → New query**, paste the contents of
-   [`supabase-setup.sql`](./supabase-setup.sql), and run it.
-3. Go to **Project Settings → API** and copy the **Project URL** and the
-   **anon public** key.
-4. Copy `.env.local.example` to `.env.local` and paste the two values:
-
-   ```bash
-   cp .env.local.example .env.local
-   ```
-
-5. Restart the dev server. Now every visitor sees the same live guest list.
+## How guest storage works
+- The browser never talks to a database. It calls the API route
+  [`app/api/guests/route.js`](./app/api/guests/route.js):
+  - `GET /api/guests` → returns all names
+  - `POST /api/guests` → validates + sanitizes the name and appends it
+- Data is persisted to `data/guests.json` (git-ignored, kept private).
+- Writes are serialized so simultaneous RSVPs can't corrupt the file.
 
 ## Deploy
-Deploy to **Vercel** (recommended for Next.js). Add the two `NEXT_PUBLIC_…`
-environment variables in the Vercel project settings.
+Use a host that runs a **persistent Node server** and keeps a writable disk, so
+the JSON file survives between requests:
+
+- **Render / Railway / Fly.io / a VPS** (`npm run build && npm run start`) ✅
+- ⚠️ **Vercel / Netlify serverless**: the filesystem is read-only / ephemeral,
+  so `data/guests.json` won't persist there. If you must deploy serverless,
+  swap the file read/write in `app/api/guests/route.js` for a hosted store
+  (e.g. Vercel KV, Upstash Redis, or a database) — the rest of the app is
+  unchanged.
 
 ## Customize
 - Names / texts: `components/Hero.js`, `components/Story.js`, `app/layout.js`
+- Bride & groom in the scroll scene: `components/BrideGroom.js`
 - Date: `components/Countdown.js` (the `TARGET` constant) and Hero/Story text
 - Colors & fonts: `tailwind.config.js`
 - 3D effect: `components/Scene3D.js`
-# wedding-day
+- Music: replace `public/music.mp3` with your own track
