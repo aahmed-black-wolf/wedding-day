@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useScroll, motion, useTransform } from "framer-motion";
 
-const FRAME_COUNT = 50;
+const FRAME_COUNT = 15;
 const framePath = (i) =>
-  `/anime/frame_${String(i + 1).padStart(4, "0")}.webp`;
+  `/anime/frame_${String(i + 1).padStart(3, "0")}.png`;
 
 export default function AnimeScroll() {
   const sectionRef = useRef(null);
@@ -74,11 +74,21 @@ export default function AnimeScroll() {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, w, h);
 
-    // Foreground: contain-fit, sharp, centered — the whole frame, uncropped.
-    const fitScale = Math.min(w / iw, h / ih);
-    const fw = iw * fitScale;
-    const fh = ih * fitScale;
-    ctx.drawImage(img, (w - fw) / 2, (h - fh) / 2, fw, fh);
+    // The footage was filmed in portrait but the frames are stored sideways
+    // (landscape). Rotate landscape frames 90° clockwise so the drawing stands
+    // upright. Fit is computed against the post-rotation (swapped) dimensions.
+    const rotate = iw > ih;
+    const fitW = rotate ? ih : iw;
+    const fitH = rotate ? iw : ih;
+    const fitScale = Math.min(w / fitW, h / fitH);
+    const dw = iw * fitScale;
+    const dh = ih * fitScale;
+
+    ctx.save();
+    ctx.translate(w / 2, h / 2);
+    if (rotate) ctx.rotate(Math.PI / 2); // flip to -Math.PI/2 if upside down
+    ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
+    ctx.restore();
   };
 
   // Scrub frames with scroll (rAF-throttled). Reduced motion -> static frame.
