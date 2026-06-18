@@ -3,6 +3,7 @@ import Countdown from "@/components/Countdown";
 import Story from "@/components/Story";
 import AnimeScroll from "@/components/AnimeScroll";
 import BrideGroom from "@/components/BrideGroom";
+import HeartCrack from "@/components/HeartCrack";
 import Location from "@/components/Location";
 import Guests from "@/components/Guests";
 import Experience from "@/components/Experience";
@@ -15,6 +16,7 @@ export default function Home() {
       <Countdown />
       <Story />
       <AnimeScroll />
+      <HeartCrack />
       <BrideGroom />
       <Location />
       <Guests />
