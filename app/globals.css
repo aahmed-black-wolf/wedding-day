@@ -11,17 +11,18 @@ body {
   padding: 0;
   margin: 0;
   scroll-behavior: smooth;
-  /* Kill any horizontal scroll/pan on mobile. Must be on <html> too — on iOS
-     Safari clipping on <body> alone does not prevent the page panning.
-     Use `clip`, NOT `hidden`: `overflow-x: hidden` forces `overflow-y` to
-     compute to `auto`, turning <html> into a scroll container, which breaks
-     `position: sticky` (the scroll-scrub animation in AnimeScroll). `clip`
-     clips the same horizontal overflow without creating a scroll container. */
-  overflow-x: clip;
-  width: 100%;
 }
 
 body {
+  /* Kill horizontal scroll/pan on mobile. This MUST stay on <body>, not <html>:
+     body's overflow propagates up to the viewport so it actually clips the
+     page, while <html> stays `overflow: visible` so `position: sticky` keeps
+     working — the scroll-scrub in AnimeScroll depends on it. Putting overflow-x
+     on <html> turns the root into a scroll container (overflow-y computes to
+     auto) and breaks sticky; using `clip` on <html> avoids that but doesn't
+     reliably propagate to the viewport in Safari, so the page can still pan.
+     The petals are separately contained via `contain: paint` in FallingFlowers. */
+  overflow-x: hidden;
   background:
     radial-gradient(1200px 600px at 80% -10%, #fde7ea 0%, transparent 60%),
     radial-gradient(900px 500px at 10% 10%, #fff1e8 0%, transparent 55%),
