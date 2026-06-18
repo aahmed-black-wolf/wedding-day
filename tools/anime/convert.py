@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 import torch
-from PIL import Image
+from PIL import Image, ImageFilter, ImageOps
 
 SRC = Path(__file__).parent / "work" / "frames_src"
 PREVIEW_DIR = Path(__file__).parent / "work" / "preview"
@@ -64,6 +64,24 @@ def stylize(model, img: Image.Image, dev: torch.device) -> Image.Image:
     return to_image(model(to_tensor(img, dev)))
 
 
+def pencil_sketch(img: Image.Image, sigma: float = 6.0) -> Image.Image:
+    """Black-and-white hand-drawn pencil look: white paper, graphite shading.
+
+    Classic color-dodge of the grayscale against its blurred inverse — the same
+    trick a "pencil sketch" photo filter uses. sigma controls line softness.
+    """
+    import numpy as np
+    g = ImageOps.grayscale(img)
+    inv = ImageOps.invert(g).filter(ImageFilter.GaussianBlur(sigma))
+    a = np.asarray(g, dtype="float32")
+    b = np.asarray(inv, dtype="float32")
+    dodge = np.minimum(255.0, a * 255.0 / (255.0 - b + 1e-3))
+    return Image.fromarray(dodge.astype("uint8"), "L").convert("RGB")
+
+
+EFFECTS = {"none": None, "pencil": pencil_sketch}
+
+
 def web_optimize(img: Image.Image, rotate: int = 0) -> Image.Image:
     if rotate:
         img = img.rotate(rotate, expand=True)
@@ -92,7 +110,8 @@ def preview(dev: torch.device, rotate: int = 0) -> int:
     return 0
 
 
-def batch(style: str, dev: torch.device, rotate: int = 0, limit: int = 0) -> int:
+def batch(style: str, dev: torch.device, rotate: int = 0, limit: int = 0,
+          effect: str = "none") -> int:
     frames = sorted(SRC.glob("frame_*.png"))
     if not frames:
         print("ERROR: no source frames (run extract.py)", file=sys.stderr)
@@ -102,9 +121,12 @@ def batch(style: str, dev: torch.device, rotate: int = 0, limit: int = 0) -> int
     OUT.mkdir(parents=True, exist_ok=True)
     for p in OUT.glob("*.webp"):
         p.unlink()
+    fx = EFFECTS[effect]
     model = load_model(style, dev)
     for i, p in enumerate(frames, start=1):
         out = web_optimize(stylize(model, Image.open(p), dev), rotate)
+        if fx:
+            out = fx(out)
         dest = OUT / f"frame_{i:04d}.webp"
         out.save(dest, "WEBP", quality=WEBP_QUALITY, method=6)
         if i % 10 == 0 or i == len(frames):
@@ -121,11 +143,13 @@ def main() -> int:
                     help="degrees to rotate each frame (-90 = clockwise)")
     ap.add_argument("--limit", type=int, default=0,
                     help="only convert the first N frames (0 = all)")
+    ap.add_argument("--effect", choices=list(EFFECTS), default="none",
+                    help="post-process look ('pencil' = B&W hand-drawn sketch)")
     args = ap.parse_args()
     dev = device()
     print(f"device: {dev}")
     return (preview(dev, args.rotate) if args.preview
-            else batch(args.style, dev, args.rotate, args.limit))
+            else batch(args.style, dev, args.rotate, args.limit, args.effect))
 
 
 if __name__ == "__main__":
