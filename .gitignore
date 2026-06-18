@@ -12,6 +12,7 @@ __pycache__/
 # Guest RSVP data (server-side store) — keep private, not in git
 /data
 
+.env
 .env.local
 .env*.local
 npm-debug.log*

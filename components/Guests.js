@@ -56,7 +56,7 @@ export default function Guests() {
 
   return (
     <section id="rsvp" className="section">
-      <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-2">
+      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-10 lg:grid-cols-2">
         {/* RSVP form */}
         <div className="text-center lg:text-right">
           <motion.h2
