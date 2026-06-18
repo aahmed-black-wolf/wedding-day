@@ -7,6 +7,11 @@
 Usage:
   uv run tools/anime/convert.py --preview            # render frame_001 in all styles
   uv run tools/anime/convert.py --style paprika      # full batch -> public/anime
+  uv run tools/anime/convert.py --style paprika --rotate -90   # rotate upright (CW)
+
+The source video was filmed portrait but exported as landscape frames, so the
+people lie on their side. --rotate <deg> spins each frame before web-optimizing
+(-90 = clockwise, the value that stands this video's couple upright).
 """
 import argparse
 import sys
@@ -57,13 +62,15 @@ def stylize(model, img: Image.Image, dev: torch.device) -> Image.Image:
     return to_image(model(to_tensor(img, dev)))
 
 
-def web_optimize(img: Image.Image) -> Image.Image:
+def web_optimize(img: Image.Image, rotate: int = 0) -> Image.Image:
+    if rotate:
+        img = img.rotate(rotate, expand=True)
     w, h = img.size
     nh = round(h * OUT_WIDTH / w)
     return img.resize((OUT_WIDTH, nh), Image.LANCZOS)
 
 
-def preview(dev: torch.device) -> int:
+def preview(dev: torch.device, rotate: int = 0) -> int:
     src = SRC / "frame_001.png"
     if not src.exists():
         print("ERROR: run extract.py first (frame_001.png missing)", file=sys.stderr)
@@ -72,7 +79,7 @@ def preview(dev: torch.device) -> int:
     img = Image.open(src)
     for style in STYLES:
         model = load_model(style, dev)
-        out = web_optimize(stylize(model, img, dev))
+        out = web_optimize(stylize(model, img, dev), rotate)
         dest = PREVIEW_DIR / f"preview_{style}.webp"
         out.save(dest, "WEBP", quality=WEBP_QUALITY, method=6)
         print(f"  wrote {dest}")
@@ -80,7 +87,7 @@ def preview(dev: torch.device) -> int:
     return 0
 
 
-def batch(style: str, dev: torch.device) -> int:
+def batch(style: str, dev: torch.device, rotate: int = 0) -> int:
     frames = sorted(SRC.glob("frame_*.png"))
     if not frames:
         print("ERROR: no source frames (run extract.py)", file=sys.stderr)
@@ -90,7 +97,7 @@ def batch(style: str, dev: torch.device) -> int:
         p.unlink()
     model = load_model(style, dev)
     for i, p in enumerate(frames, start=1):
-        out = web_optimize(stylize(model, Image.open(p), dev))
+        out = web_optimize(stylize(model, Image.open(p), dev), rotate)
         dest = OUT / f"frame_{i:04d}.webp"
         out.save(dest, "WEBP", quality=WEBP_QUALITY, method=6)
         if i % 10 == 0 or i == len(frames):
@@ -103,10 +110,13 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--preview", action="store_true")
     ap.add_argument("--style", choices=STYLES, default="paprika")
+    ap.add_argument("--rotate", type=int, default=0,
+                    help="degrees to rotate each frame (-90 = clockwise)")
     args = ap.parse_args()
     dev = device()
     print(f"device: {dev}")
-    return preview(dev) if args.preview else batch(args.style, dev)
+    return (preview(dev, args.rotate) if args.preview
+            else batch(args.style, dev, args.rotate))
 
 
 if __name__ == "__main__":
