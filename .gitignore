@@ -4,6 +4,11 @@
 /build
 .DS_Store
 
+# Anime conversion tooling — dev only, not committed (output WebP frames in public/ ARE committed)
+/tools/anime/work
+/tools/anime/.venv
+__pycache__/
+
 # Guest RSVP data (server-side store) — keep private, not in git
 /data
 
