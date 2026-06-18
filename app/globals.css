@@ -12,8 +12,12 @@ body {
   margin: 0;
   scroll-behavior: smooth;
   /* Kill any horizontal scroll/pan on mobile. Must be on <html> too — on iOS
-     Safari overflow-x:hidden on <body> alone does not prevent the page panning. */
-  overflow-x: hidden;
+     Safari clipping on <body> alone does not prevent the page panning.
+     Use `clip`, NOT `hidden`: `overflow-x: hidden` forces `overflow-y` to
+     compute to `auto`, turning <html> into a scroll container, which breaks
+     `position: sticky` (the scroll-scrub animation in AnimeScroll). `clip`
+     clips the same horizontal overflow without creating a scroll container. */
+  overflow-x: clip;
   width: 100%;
 }
 
