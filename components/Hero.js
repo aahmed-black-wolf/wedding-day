@@ -31,14 +31,14 @@ export default function Hero() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.1, delay: 0.5, ease: "easeOut" }}
-          className="font-display text-6xl leading-tight text-wine sm:text-7xl md:text-8xl"
+          className="whitespace-nowrap font-display text-[clamp(1.6rem,8.5vw,3.75rem)] leading-tight text-wine sm:text-7xl md:text-8xl"
         >
           عبد الرحمن
           <motion.span
             initial={{ opacity: 0, rotate: -20 }}
             animate={{ opacity: 1, rotate: 0 }}
             transition={{ duration: 0.8, delay: 1.1 }}
-            className="mx-4 inline-block gold-text"
+            className="mx-2 inline-block gold-text sm:mx-4"
           >
             &amp;
           </motion.span>

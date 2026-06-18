@@ -16,7 +16,9 @@ const PETALS = Array.from({ length: 26 }, (_, i) => {
   const r3 = rand(i + 61);
   return {
     id: i,
-    left: `${(r * 100).toFixed(2)}%`,
+    // Keep petals in a [12%, 88%] band, anchored by their centre below, so the
+    // glyph width + sway + rotation never overflow the viewport on mobile.
+    left: `${(12 + r * 76).toFixed(2)}%`,
     fall: 9 + r2 * 9, // 9s – 18s
     sway: 3 + r3 * 3, // 3s – 6s
     delay: -(r * 18).toFixed(2), // negative so they're already mid-fall on load
@@ -57,22 +59,29 @@ export default function FallingFlowers() {
       {PETALS.map((p) => (
         <span
           key={p.id}
-          className="petal-fall absolute top-0 will-change-transform"
-          style={{
-            left: p.left,
-            "--fall": `${p.fall}s`,
-            "--delay": `${p.delay}s`,
-          }}
+          // Anchor centres the petal on `left` (translateX(-50%)) so the glyph +
+          // sway extend symmetrically and never overflow the viewport edge.
+          className="absolute top-0 -translate-x-1/2"
+          style={{ left: p.left }}
         >
           <span
-            className="petal-sway block"
-            style={{
-              "--sway": `${p.sway}s`,
-              fontSize: `${p.size}px`,
-              opacity: p.opacity,
-            }}
+            className="petal-fall block will-change-transform"
+            style={{ "--fall": `${p.fall}s`, "--delay": `${p.delay}s` }}
           >
-            {p.flower}
+            <span
+              className="petal-sway block"
+              style={{
+                "--sway": `${p.sway}s`,
+                // Responsive: shrinks on small screens (vw), clamped to a
+                // smaller floor and the original size as the ceiling.
+                fontSize: `clamp(${Math.round(p.size * 0.55)}px, ${(
+                  p.size * 0.19
+                ).toFixed(2)}vw, ${p.size}px)`,
+                opacity: p.opacity,
+              }}
+            >
+              {p.flower}
+            </span>
           </span>
         </span>
       ))}
