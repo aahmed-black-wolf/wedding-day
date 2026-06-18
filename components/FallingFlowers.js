@@ -54,7 +54,12 @@ export default function FallingFlowers() {
     <div
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-30 overflow-hidden transition-opacity duration-700"
-      style={{ opacity: active ? 1 : 0 }}
+      // `contain: paint` forces the browser to clip the petals — including the
+      // ones promoted to their own GPU layer by will-change/animation — to this
+      // box, and excludes their swaying transforms from the page's scrollable
+      // area. Without it, overflow-hidden leaks composited layers on mobile and
+      // the page can be panned/zoomed horizontally.
+      style={{ opacity: active ? 1 : 0, contain: "paint" }}
     >
       {PETALS.map((p) => (
         <span

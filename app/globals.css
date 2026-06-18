@@ -11,6 +11,10 @@ body {
   padding: 0;
   margin: 0;
   scroll-behavior: smooth;
+  /* Kill any horizontal scroll/pan on mobile. Must be on <html> too — on iOS
+     Safari overflow-x:hidden on <body> alone does not prevent the page panning. */
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body {
@@ -18,7 +22,6 @@ body {
     radial-gradient(1200px 600px at 80% -10%, #fde7ea 0%, transparent 60%),
     radial-gradient(900px 500px at 10% 10%, #fff1e8 0%, transparent 55%),
     #fff7f1;
-  overflow-x: hidden;
 }
 
 /* Soft section dividers */
