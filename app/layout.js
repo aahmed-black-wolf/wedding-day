@@ -15,8 +15,8 @@ const aref = Aref_Ruqaa({
   display: "swap",
 });
 
-const siteTitle = "عبدالرحمن & نرمين — حفل زفاف";
-const siteDescription = "دعوة زفاف عبدالرحمن ونرمين — ١٨ يوليو ٢٠٢٦";
+const siteTitle = "عبد الرحمن & نرمين — حفل زفاف";
+const siteDescription = "دعوة زفاف عبد الرحمن ونرمين — ١٨ يوليو ٢٠٢٦";
 
 export const metadata = {
   metadataBase: new URL("https://nimo-and-dibo.example.com"),

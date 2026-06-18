@@ -48,7 +48,7 @@ export default function BrideGroom() {
               👰‍♀️
             </motion.div>
             <p className="mt-2 text-center font-display text-lg text-wine">
-              عبدالرحمن
+              نرمين
             </p>
             <p className="text-center text-xs text-ink/50">العروسة</p>
           </motion.div>
@@ -85,7 +85,7 @@ export default function BrideGroom() {
               🤵‍♂️
             </motion.div>
             <p className="mt-2 text-center font-display text-lg text-wine">
-              نرمين
+              عبد الرحمن
             </p>
             <p className="text-center text-xs text-ink/50">العريس</p>
           </motion.div>

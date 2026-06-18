@@ -138,7 +138,7 @@ export default function AnimeScroll() {
           <p className="font-display text-3xl text-wine drop-shadow-sm sm:text-5xl">
             قصة حب
           </p>
-          <p className="mt-2 text-wine/70">عبدالرحمن &amp; نرمين</p>
+          <p className="mt-2 text-wine/70">عبد الرحمن &amp; نرمين</p>
         </motion.div>
       </div>
     </section>

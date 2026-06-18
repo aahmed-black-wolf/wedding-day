@@ -33,7 +33,7 @@ export default function Hero() {
           transition={{ duration: 1.1, delay: 0.5, ease: "easeOut" }}
           className="font-display text-6xl leading-tight text-wine sm:text-7xl md:text-8xl"
         >
-          عبدالرحمن
+          عبد الرحمن
           <motion.span
             initial={{ opacity: 0, rotate: -20 }}
             animate={{ opacity: 1, rotate: 0 }}

@@ -147,7 +147,7 @@ export default function Experience() {
                 💌
               </motion.div>
               <h1 className="mt-6 font-display text-5xl text-cream sm:text-6xl">
-                عبدالرحمن &amp; نرمين
+                عبد الرحمن &amp; نرمين
               </h1>
               <p className="mt-3 text-cream/80">يدعوانكم لمشاركة فرحتهما</p>
 
