@@ -1,4 +1,4 @@
-# نيمو & ديبو — موقع زفاف متحرك 💍
+# عبدالرحمن & نرمين — موقع زفاف متحرك 💍
 
 Animated Arabic wedding website for **Nemmo & Depo** — **18 July 2026**.
 Built with **Next.js**, **Framer Motion**, and **React Three Fiber** (3D floating

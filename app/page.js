@@ -19,7 +19,7 @@ export default function Home() {
 
       <footer className="section pt-0 text-center">
         <div className="mx-auto h-px max-w-xs bg-gold/40" />
-        <p className="mt-8 font-display text-2xl text-wine">نيمو &amp; ديبو</p>
+        <p className="mt-8 font-display text-2xl text-wine">عبدالرحمن &amp; نرمين</p>
         <p className="mt-2 text-ink/60">١٨ يوليو ٢٠٢٦ — بانتظاركم 💐</p>
       </footer>
     </main>
