@@ -1,31 +1,25 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
 import crypto from "crypto";
+import { Redis } from "@upstash/redis";
 
 // Always run on the server, never cache the list.
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const FILE = path.join(DATA_DIR, "guests.json");
-
-// Serialize writes so concurrent RSVPs can't clobber the file.
-let writeChain = Promise.resolve();
+// Vercel's serverless filesystem is read-only (and ephemeral), so guests are
+// persisted in Upstash Redis instead of a local JSON file. The Vercel/Upstash
+// integration injects KV_REST_API_URL / KV_REST_API_TOKEN; fall back to the
+// UPSTASH_* names used by Redis.fromEnv() for non-Vercel setups.
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
+});
+const KEY = "guests";
 
 async function readGuests() {
-  try {
-    const raw = await fs.readFile(FILE, "utf8");
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr : [];
-  } catch {
-    return []; // file not created yet
-  }
-}
-
-async function writeGuests(list) {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.writeFile(FILE, JSON.stringify(list, null, 2), "utf8");
+  // Stored as a list of records (newest pushed to the right).
+  const raw = await redis.lrange(KEY, 0, -1);
+  return raw.map((item) => (typeof item === "string" ? JSON.parse(item) : item));
 }
 
 function sanitize(name) {
@@ -40,9 +34,13 @@ function sanitize(name) {
 }
 
 export async function GET() {
-  const list = await readGuests();
-  list.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
-  return NextResponse.json({ guests: list });
+  try {
+    const list = await readGuests();
+    list.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+    return NextResponse.json({ guests: list });
+  } catch {
+    return NextResponse.json({ error: "تعذّر تحميل القائمة" }, { status: 500 });
+  }
 }
 
 export async function POST(request) {
@@ -58,23 +56,14 @@ export async function POST(request) {
     return NextResponse.json({ error: "الاسم مطلوب" }, { status: 400 });
   }
 
-  // Queue this write behind any in-flight write, but keep the chain alive
-  // even if one write fails.
-  const task = writeChain.then(async () => {
-    const list = await readGuests();
-    const record = {
-      id: crypto.randomUUID(),
-      name,
-      created_at: new Date().toISOString(),
-    };
-    list.push(record);
-    await writeGuests(list);
-    return record;
-  });
-  writeChain = task.catch(() => {});
+  const record = {
+    id: crypto.randomUUID(),
+    name,
+    created_at: new Date().toISOString(),
+  };
 
   try {
-    const record = await task;
+    await redis.rpush(KEY, JSON.stringify(record));
     return NextResponse.json({ guest: record }, { status: 201 });
   } catch {
     return NextResponse.json(
