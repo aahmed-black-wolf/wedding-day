@@ -24,8 +24,10 @@ SRC = Path(__file__).parent / "work" / "frames_src"
 PREVIEW_DIR = Path(__file__).parent / "work" / "preview"
 OUT = Path(__file__).resolve().parents[2] / "public" / "anime"
 STYLES = ["paprika", "celeba_distill", "face_paint_512_v2"]
+# Cap output width. The source is low-res (576px on the short edge once rotated
+# upright), so we never enlarge past native — upscaling only invents blur.
 OUT_WIDTH = 960
-WEBP_QUALITY = 80
+WEBP_QUALITY = 90
 
 
 def device() -> torch.device:
@@ -66,8 +68,11 @@ def web_optimize(img: Image.Image, rotate: int = 0) -> Image.Image:
     if rotate:
         img = img.rotate(rotate, expand=True)
     w, h = img.size
-    nh = round(h * OUT_WIDTH / w)
-    return img.resize((OUT_WIDTH, nh), Image.LANCZOS)
+    target_w = min(OUT_WIDTH, w)  # never upscale past native resolution
+    if target_w == w:
+        return img
+    nh = round(h * target_w / w)
+    return img.resize((target_w, nh), Image.LANCZOS)
 
 
 def preview(dev: torch.device, rotate: int = 0) -> int:
@@ -87,11 +92,13 @@ def preview(dev: torch.device, rotate: int = 0) -> int:
     return 0
 
 
-def batch(style: str, dev: torch.device, rotate: int = 0) -> int:
+def batch(style: str, dev: torch.device, rotate: int = 0, limit: int = 0) -> int:
     frames = sorted(SRC.glob("frame_*.png"))
     if not frames:
         print("ERROR: no source frames (run extract.py)", file=sys.stderr)
         return 1
+    if limit:
+        frames = frames[:limit]
     OUT.mkdir(parents=True, exist_ok=True)
     for p in OUT.glob("*.webp"):
         p.unlink()
@@ -112,11 +119,13 @@ def main() -> int:
     ap.add_argument("--style", choices=STYLES, default="paprika")
     ap.add_argument("--rotate", type=int, default=0,
                     help="degrees to rotate each frame (-90 = clockwise)")
+    ap.add_argument("--limit", type=int, default=0,
+                    help="only convert the first N frames (0 = all)")
     args = ap.parse_args()
     dev = device()
     print(f"device: {dev}")
     return (preview(dev, args.rotate) if args.preview
-            else batch(args.style, dev, args.rotate))
+            else batch(args.style, dev, args.rotate, args.limit))
 
 
 if __name__ == "__main__":

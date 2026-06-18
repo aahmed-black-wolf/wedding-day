@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useScroll, motion, useTransform } from "framer-motion";
 
-const FRAME_COUNT = 106;
+const FRAME_COUNT = 50;
 const framePath = (i) =>
   `/anime/frame_${String(i + 1).padStart(4, "0")}.webp`;
 
@@ -49,7 +49,11 @@ export default function AnimeScroll() {
     };
   }, []);
 
-  // Draw a given frame index, cover-fit, on a DPR-aware canvas.
+  // Draw frame `index` on a DPR-aware canvas. The source clip is portrait and
+  // low-res, so cover-fitting it into a landscape viewport would crop the couple
+  // to a thin strip and upscale heavily. Instead: a blurred, darkened cover fills
+  // the screen as a backdrop, and the whole frame is drawn contain-fit (no crop)
+  // and centered on top — full-bleed, but the subject is never cut off.
   const draw = (index) => {
     const canvas = canvasRef.current;
     const img = imagesRef.current[index];
@@ -58,17 +62,31 @@ export default function AnimeScroll() {
     const dpr = window.devicePixelRatio || 1;
     const cw = canvas.clientWidth;
     const ch = canvas.clientHeight;
-    if (canvas.width !== cw * dpr || canvas.height !== ch * dpr) {
-      canvas.width = cw * dpr;
-      canvas.height = ch * dpr;
+    const w = cw * dpr;
+    const h = ch * dpr;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
     }
-    const scale = Math.max((cw * dpr) / img.naturalWidth, (ch * dpr) / img.naturalHeight);
-    const dw = img.naturalWidth * scale;
-    const dh = img.naturalHeight * scale;
-    const dx = (cw * dpr - dw) / 2;
-    const dy = (ch * dpr - dh) / 2;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, dx, dy, dw, dh);
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    ctx.clearRect(0, 0, w, h);
+
+    // Backdrop: cover-fit, blurred + dimmed (fills the letterbox area).
+    const coverScale = Math.max(w / iw, h / ih);
+    const bw = iw * coverScale;
+    const bh = ih * coverScale;
+    ctx.filter = `blur(${Math.round(24 * dpr)}px)`;
+    ctx.drawImage(img, (w - bw) / 2, (h - bh) / 2, bw, bh);
+    ctx.filter = "none";
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.fillRect(0, 0, w, h);
+
+    // Foreground: contain-fit, sharp, centered — the whole frame, uncropped.
+    const fitScale = Math.min(w / iw, h / ih);
+    const fw = iw * fitScale;
+    const fh = ih * fitScale;
+    ctx.drawImage(img, (w - fw) / 2, (h - fh) / 2, fw, fh);
   };
 
   // Scrub frames with scroll (rAF-throttled). Reduced motion -> static frame.
