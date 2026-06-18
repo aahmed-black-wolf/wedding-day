@@ -7,11 +7,13 @@ import HeartCrack from "@/components/HeartCrack";
 import Location from "@/components/Location";
 import Guests from "@/components/Guests";
 import Experience from "@/components/Experience";
+import FallingFlowers from "@/components/FallingFlowers";
 
 export default function Home() {
   return (
     <main className="relative w-full">
       <Experience />
+      <FallingFlowers />
       <Hero />
       <Countdown />
       <Story />
